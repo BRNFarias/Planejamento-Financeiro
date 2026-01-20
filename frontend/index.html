@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle Financeiro</title>
+    <style>
+        :root {
+            --bg-color: #121214;
+            --card-color: #202024;
+            --text-color: #e1e1e6;
+            --primary: #8257e5; /* Roxo estilo Rocketseat/Nubank */
+            --primary-hover: #9466ff;
+            --input-bg: #121214;
+            --border: #323238;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-color);
+            width: 100%;
+            max-width: 400px; /* Tamanho de celular */
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        h2 { text-align: center; margin-bottom: 24px; color: var(--primary); }
+
+        .form-group { margin-bottom: 16px; }
+
+        label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: #a8a8b3; }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-color);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus { border-color: var(--primary); }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover { background-color: var(--primary-hover); }
+        button:disabled { background-color: #555; cursor: not-allowed; opacity: 0.7; }
+
+        .status { 
+            text-align: center; 
+            margin-top: 15px; 
+            font-size: 0.9rem; 
+            height: 20px;
+        }
+        .success { color: #04d361; }
+        .error { color: #ff669d; }
+
+        /* Ajuste para inputs de data no mobile */
+        input[type="date"] {
+            color-scheme: dark;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Novo Gasto 💸</h2>
+        
+        <div class="form-group">
+            <label>Responsável</label>
+            <select id="responsavel" onchange="salvarPreferencia()">
+                <option value="Breno">Breno</option>
+                <option value="Rebeca">Rebeca</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Data</label>
+            <input type="date" id="data">
+        </div>
+
+        <div class="form-group">
+            <label>Descrição</label>
+            <input type="text" id="descricao" placeholder="Ex: Mercado, Uber, Jantar...">
+        </div>
+
+        <div class="form-group">
+            <label>Valor (R$)</label>
+            <input type="number" id="valor" step="0.01" inputmode="decimal" placeholder="0,00">
+        </div>
+
+        <div class="form-group">
+            <label>Tipo</label>
+            <select id="tipo">
+                <option value="Variável">Variável (Dia a dia)</option>
+                <option value="Fixo">Fixo (Contas mensais)</option>
+                <option value="Lazer">Lazer / Fim de Semana</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Meio de Pagamento</label>
+            <select id="meio">
+                <option value="Cartão">Cartão de Crédito</option>
+                <option value="Pix">Pix / Débito</option>
+                <option value="Dinheiro">Dinheiro</option>
+            </select>
+        </div>
+
+        <button onclick="enviarDados()" id="btnEnviar">Lançar Despesa</button>
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        // 1. Configuração Inicial
+        document.addEventListener('DOMContentLoaded', () => {
+            // Define data de hoje automaticamente
+            document.getElementById('data').valueAsDate = new Date();
+            
+            // Recupera quem é o usuário (Breno ou Rebeca) do LocalStorage
+            const usuarioSalvo = localStorage.getItem('usuario_financeiro');
+            if (usuarioSalvo) {
+                document.getElementById('responsavel').value = usuarioSalvo;
+            }
+        });
+
+        // 2. Salva preferência de usuário
+        function salvarPreferencia() {
+            const usuario = document.getElementById('responsavel').value;
+            localStorage.setItem('usuario_financeiro', usuario);
+        }
+
+        // 3. Função de Envio
+        async function enviarDados() {
+            const btn = document.getElementById('btnEnviar');
+            const statusDiv = document.getElementById('status');
+            
+            // Coleta dados
+            const dados = {
+                responsavel: document.getElementById('responsavel').value,
+                data: document.getElementById('data').value, // Formato YYYY-MM-DD
+                descricao: document.getElementById('descricao').value,
+                valor: parseFloat(document.getElementById('valor').value),
+                tipo: document.getElementById('tipo').value,
+                meio: document.getElementById('meio').value
+            };
+
+            // Validação simples
+            if (!dados.descricao || !dados.valor) {
+                statusDiv.innerText = "Preencha descrição e valor!";
+                statusDiv.className = "status error";
+                return;
+            }
+
+            // Feedback visual de "Carregando"
+            btn.disabled = true;
+            btn.innerText = "Enviando...";
+            statusDiv.innerText = "";
+
+            try {
+                // AQUI VAI O ENDEREÇO DA SUA API PYTHON (Vamos criar no próximo passo)
+                // Por enquanto está simulando um delay
+                
+                // const response = await fetch('http://SEU_IP:5000/api/lancar', {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify(dados)
+                // });
+
+                console.log("Dados prontos para envio:", dados);
+                
+                // Simulação de sucesso (Remover depois)
+                await new Promise(r => setTimeout(r, 1000)); 
+
+                // Feedback de Sucesso
+                statusDiv.innerText = "Sucesso! Gasto registrado.";
+                statusDiv.className = "status success";
+                
+                // Limpa campos essenciais
+                document.getElementById('descricao').value = "";
+                document.getElementById('valor').value = "";
+                document.getElementById('descricao').focus();
+
+            } catch (error) {
+                console.error(error);
+                statusDiv.innerText = "Erro ao conectar com servidor.";
+                statusDiv.className = "status error";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Lançar Despesa";
+            }
+        }
+    </script>
+</body>
+</html>

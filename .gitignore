@@ -1,0 +1,26 @@
+# --- ARQUIVOS DE SEGURANÇA (NUNCA SUBIR) ---
+credentials.json
+client_secret.json
+token.json
+.env
+
+# --- PYTHON (Backend) ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# --- IDEs e SISTEMA OPERACIONAL ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Logs ---
+*.log
