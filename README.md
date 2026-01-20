@@ -69,8 +69,8 @@ O projeto segue o princípio de **Separação de Responsabilidades**, utilizando
 ### 1️⃣ Clone o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/financeiro-casal.git
-cd financeiro-casal
+git clone https://github.com/BRNFarias/Planejamento-Financeiro.git
+cd Planejamento Financeiro
 ```
 
 ### 2️⃣ Configuração do Backend
